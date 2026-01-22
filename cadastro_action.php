@@ -26,11 +26,43 @@ if ($stmt->get_result()->num_rows > 0) {
 $hash = hash('sha256', $senha);
 $active = 0;
 
-$ins = $mysqli->prepare('INSERT INTO USERS (MATRICULA, TIPO, NOME, PASSWORD_HASH, ACTIVE, AVATAR_URL, BIRTH_DATE, ID_ESCOLA, ID_TURMA) VALUES (?,?,?,?,?,?,?,?,?)');
-$ins->bind_param('isssissii', $matricula, $tipo, $nome, $hash, $active, $avatar, $birth_date, $id_escola, $id_turma);
+$ins = $mysqli->prepare(
+  'INSERT INTO USERS 
+   (MATRICULA, TIPO, NOME, PASSWORD_HASH, ACTIVE, AVATAR_URL, BIRTH_DATE, ID_ESCOLA, ID_TURMA) 
+   VALUES (?,?,?,?,?,?,?,?,?)'
+);
+
+$ins->bind_param(
+  'isssissii',
+  $matricula,
+  $tipo,
+  $nome,
+  $hash,
+  $active,
+  $avatar,
+  $birth_date,
+  $id_escola,
+  $id_turma
+);
+
 if (!$ins->execute()) {
   header('Location: /cadastro.php?err=Erro+ao+cadastrar:+'.urlencode($ins->error));
   exit;
+}
+
+if ($tipo === 'PROF') {
+
+  $insProf = $mysqli->prepare(
+    'INSERT INTO PROF_TURMA (ID_TURMA, MATRICULA) VALUES (?, ?)'
+  );
+
+  $insProf->bind_param('ii', $id_turma, $matricula);
+
+  if (!$insProf->execute()) {
+    // Se quiser, aqui dá até pra deletar o usuário recém-criado
+    header('Location: /cadastro.php?err=Erro+ao+vincular+professor+à+turma:+'.urlencode($insProf->error));
+    exit;
+  }
 }
 
 
