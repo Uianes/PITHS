@@ -113,6 +113,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     admin_redirect('ok', 'Aluno atualizado.');
   }
 
+  if ($action === 'add_prof_turma') {
+    $matricula = isset($_POST['matricula']) ? (int)$_POST['matricula'] : 0;
+    $idTurma = isset($_POST['id_turma']) ? (int)$_POST['id_turma'] : 0;
+
+    if ($matricula <= 0 || $idTurma <= 0) {
+      admin_redirect('err', 'Dados do professor/turma inválidos.');
+    }
+
+    $chkProf = $mysqli->prepare("SELECT COUNT(*) c FROM USERS WHERE MATRICULA=? AND TIPO='PROF' AND ACTIVE=1");
+    $chkProf->bind_param('i', $matricula);
+    $chkProf->execute();
+    $profExists = (int)$chkProf->get_result()->fetch_assoc()['c'];
+    if ($profExists === 0) {
+      admin_redirect('err', 'Professor inválido.');
+    }
+
+    $chkTurma = $mysqli->prepare('SELECT COUNT(*) c FROM TURMA WHERE ID_TURMA=?');
+    $chkTurma->bind_param('i', $idTurma);
+    $chkTurma->execute();
+    $turmaExists = (int)$chkTurma->get_result()->fetch_assoc()['c'];
+    if ($turmaExists === 0) {
+      admin_redirect('err', 'Turma inválida.');
+    }
+
+    $ins = $mysqli->prepare('INSERT IGNORE INTO PROF_TURMA (ID_TURMA, MATRICULA) VALUES (?, ?)');
+    $ins->bind_param('ii', $idTurma, $matricula);
+    $ins->execute();
+    if ($ins->affected_rows === 0) {
+      admin_redirect('ok', 'Professor já estava vinculado a essa turma.');
+    }
+    admin_redirect('ok', 'Professor vinculado à turma.');
+  }
+
+  if ($action === 'remove_prof_turma') {
+    $matricula = isset($_POST['matricula']) ? (int)$_POST['matricula'] : 0;
+    $idTurma = isset($_POST['id_turma']) ? (int)$_POST['id_turma'] : 0;
+
+    if ($matricula <= 0 || $idTurma <= 0) {
+      admin_redirect('err', 'Dados do vínculo inválidos.');
+    }
+
+    $del = $mysqli->prepare('DELETE FROM PROF_TURMA WHERE ID_TURMA=? AND MATRICULA=?');
+    $del->bind_param('ii', $idTurma, $matricula);
+    $del->execute();
+    admin_redirect('ok', 'Vínculo removido.');
+  }
+
   if ($action === 'delete_aluno') {
     $matricula = isset($_POST['matricula']) ? (int)$_POST['matricula'] : 0;
     if ($matricula <= 0) {
@@ -157,6 +204,13 @@ $escolas = $mysqli->query("SELECT ID_ESCOLA, NOME_ESCOLA FROM ESCOLA ORDER BY NO
 $turmas = $mysqli->query("SELECT t.ID_TURMA, t.ANO, t.NOME_TURMA, t.SERIE, t.ID_ESCOLA, e.NOME_ESCOLA
   FROM TURMA t JOIN ESCOLA e ON e.ID_ESCOLA=t.ID_ESCOLA
   ORDER BY t.ANO DESC, t.NOME_TURMA ASC")->fetch_all(MYSQLI_ASSOC);
+$profs = $mysqli->query("SELECT MATRICULA, NOME FROM USERS WHERE TIPO='PROF' AND ACTIVE=1 ORDER BY NOME ASC")->fetch_all(MYSQLI_ASSOC);
+$profTurmas = $mysqli->query("SELECT pt.MATRICULA, pt.ID_TURMA, u.NOME AS NOME_PROF, t.NOME_TURMA, t.SERIE, t.ANO
+  FROM PROF_TURMA pt
+  JOIN USERS u ON u.MATRICULA=pt.MATRICULA
+  JOIN TURMA t ON t.ID_TURMA=pt.ID_TURMA
+  WHERE u.TIPO='PROF'
+  ORDER BY u.NOME ASC, t.ANO DESC, t.NOME_TURMA ASC")->fetch_all(MYSQLI_ASSOC);
 $alunos = $mysqli->query("SELECT u.MATRICULA, u.NOME, u.ID_TURMA, u.ID_ESCOLA, t.NOME_TURMA, e.NOME_ESCOLA
   FROM USERS u
   LEFT JOIN TURMA t ON t.ID_TURMA=u.ID_TURMA
@@ -264,6 +318,61 @@ piths_navbar();
               </td>
             </tr>
           <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+
+    <h5 class="mb-2">Professores por turma</h5>
+    <div class="p-3 border rounded-3 mb-3 bg-white">
+      <form method="post" class="row g-2 align-items-end">
+        <input type="hidden" name="action" value="add_prof_turma">
+        <div class="col-md-6">
+          <label class="form-label">Professor</label>
+          <select class="form-select form-select-sm" name="matricula" required>
+            <option value="">Selecione</option>
+            <?php foreach ($profs as $p): ?>
+              <option value="<?= (int)$p['MATRICULA'] ?>"><?= htmlspecialchars($p['NOME'], ENT_QUOTES, 'UTF-8') ?> (<?= (int)$p['MATRICULA'] ?>)</option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Turma</label>
+          <select class="form-select form-select-sm" name="id_turma" required>
+            <option value="">Selecione</option>
+            <?php foreach ($turmas as $t): ?>
+              <option value="<?= (int)$t['ID_TURMA'] ?>"><?= htmlspecialchars($t['NOME_TURMA'], ENT_QUOTES, 'UTF-8') ?> • <?= htmlspecialchars($t['SERIE'], ENT_QUOTES, 'UTF-8') ?> • <?= (int)$t['ANO'] ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button class="btn btn-success btn-sm btn-fun w-100" type="submit">Vincular</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-responsive mb-4">
+      <table class="table table-striped align-middle">
+        <thead><tr><th>Professor</th><th>Turma</th><th>Ano</th><th></th></tr></thead>
+        <tbody>
+          <?php if (empty($profTurmas)): ?>
+            <tr><td colspan="4" class="text-muted">Nenhum vínculo cadastrado.</td></tr>
+          <?php else: ?>
+            <?php foreach ($profTurmas as $pt): ?>
+              <tr>
+                <td><?= htmlspecialchars($pt['NOME_PROF'], ENT_QUOTES, 'UTF-8') ?> (#<?= (int)$pt['MATRICULA'] ?>)</td>
+                <td><?= htmlspecialchars($pt['NOME_TURMA'], ENT_QUOTES, 'UTF-8') ?> • <?= htmlspecialchars($pt['SERIE'], ENT_QUOTES, 'UTF-8') ?></td>
+                <td><?= (int)$pt['ANO'] ?></td>
+                <td>
+                  <form method="post" onsubmit="return confirm('Remover vínculo deste professor com esta turma?');">
+                    <input type="hidden" name="action" value="remove_prof_turma">
+                    <input type="hidden" name="matricula" value="<?= (int)$pt['MATRICULA'] ?>">
+                    <input type="hidden" name="id_turma" value="<?= (int)$pt['ID_TURMA'] ?>">
+                    <button class="btn btn-outline-danger btn-sm btn-fun" type="submit">Remover</button>
+                  </form>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>

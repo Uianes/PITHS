@@ -88,8 +88,13 @@ piths_navbar();
           <div class="col-12 col-md-6 col-lg-4">
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body d-flex flex-column">
-                <div class="fw-bold mb-1">Atividade #<?= $id ?></div>
-                <div class="small text-muted mb-2"><code><?= htmlspecialchars($path) ?></code></div>
+                <?php
+                  $activityName = trim(basename($path));
+                  if ($activityName === '') {
+                    $activityName = 'Atividade';
+                  }
+                ?>
+                <div class="fw-bold mb-1"><?= htmlspecialchars($activityName) ?></div>
 
                 <div class="mt-auto d-flex align-items-center justify-content-between">
                   <div class="small">

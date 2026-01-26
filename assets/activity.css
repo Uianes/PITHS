@@ -1,0 +1,115 @@
+:root{
+  --bg:#ffffff;
+  --text:#111111;
+  --muted:#6b6b6b;
+  --accent:#7ed957;
+  --bar:#b5b5b5;
+  --card:#ffffff;
+  --shadow:0 12px 28px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:"Poppins","Trebuchet MS",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+.app{
+  min-height:100vh;
+  padding:28px 36px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+}
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.back-btn{
+  width:46px;height:46px;border-radius:50%;
+  border:2px solid #111;background:#fff;
+  display:grid;place-items:center;
+  font-size:26px;text-decoration:none;color:#111;
+}
+.progress-wrap{
+  flex:1;display:flex;align-items:center;gap:12px;
+}
+.progress{
+  position:relative;flex:1;height:12px;border-radius:999px;
+  background:var(--bar);overflow:hidden;
+}
+.progress .fill{
+  height:100%;width:0%;background:var(--accent);
+  transition:width .3s ease;
+}
+.progress-arrow{
+  border:2px solid #111;background:#fff;border-radius:999px;
+  padding:6px 10px;cursor:pointer;font-weight:700;
+}
+.panel{
+  margin:0 auto;
+  width:min(880px,100%);
+  text-align:center;
+}
+.card{
+  background:var(--card);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+  padding:36px 28px;
+}
+.big-number{
+  font-size:120px;font-weight:900;line-height:1;
+}
+.btn-row{
+  display:flex;gap:18px;justify-content:center;flex-wrap:wrap;
+  margin-top:22px;
+}
+.btn-ghost,
+.btn-solid{
+  border-radius:16px;
+  padding:12px 28px;
+  font-size:20px;
+  font-weight:700;
+  border:2px solid #111;
+  background:#fff;
+  cursor:pointer;
+}
+.btn-solid{
+  background:#111;color:#fff;border-color:#111;
+}
+.btn-disabled{
+  opacity:.6;cursor:not-allowed;
+}
+.text-body{
+  max-width:760px;
+  margin:0 auto;
+  font-size:18px;
+  line-height:1.6;
+  color:#333;
+  text-align:left;
+}
+.options{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:18px;max-width:520px;margin:28px auto 0;
+}
+.option{
+  border:2px solid #111;border-radius:14px;padding:12px 14px;
+  background:#fff;font-size:18px;font-weight:700;cursor:pointer;
+}
+.feedback{
+  margin-top:18px;font-weight:700;
+}
+.feedback.ok{color:#1b8f2f;}
+.feedback.err{color:#b31b1b;}
+.helper{
+  color:var(--muted);font-size:14px;margin-top:10px;
+}
+.final-msg{
+  font-size:28px;font-weight:800;margin-bottom:10px;
+}
+@media (max-width: 720px){
+  .app{padding:20px;}
+  .options{grid-template-columns:1fr;}
+  .big-number{font-size:84px;}
+}

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Origem dos Números – Quiz</title>
+
+  <!-- CSS do PITHS -->
+  <link rel="stylesheet" href="../../../assets/activity.css">
+
+  <!-- Ícones -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body data-page="quiz">
+  <div class="app">
+
+    <!-- TOPO -->
+    <div class="topbar">
+      <a class="back-btn" href="javascript:void(0)" data-back-panel aria-label="Voltar">
+        <i class="bi bi-arrow-left-circle"></i>
+      </a>
+      <div class="progress-wrap">
+        <div class="progress"><div class="fill"></div></div>
+      </div>
+    </div>
+
+    <!-- CONTEÚDO -->
+    <div class="panel">
+
+      <!-- TELA INICIAL -->
+      <div class="card" id="quiz-select">
+        <h2>Origem dos Números</h2>
+        <p class="helper">
+          Leia com atenção as perguntas sobre a história em quadrinhos
+          e responda no seu ritmo.
+        </p>
+        <div class="btn-row">
+          <button class="btn-solid" id="quiz-start">Começar</button>
+        </div>
+      </div>
+
+      <!-- TELA DO QUIZ -->
+      <div class="card" id="quiz-play" style="display:none;">
+        <div class="big-number" id="quiz-question"></div>
+        <div class="options" id="quiz-options"></div>
+        <div class="feedback" id="quiz-feedback"></div>
+      </div>
+
+      <!-- TELA FINAL -->
+      <div class="card" id="quiz-final" style="display:none;">
+        <div class="final-msg">Parabéns! 🎉</div>
+        <div class="helper">
+          Você ganhou <strong id="quiz-points"></strong> pontos.
+        </div>
+        <div class="helper">
+          Tempo total: <strong id="quiz-time"></strong>.
+        </div>
+        <div class="helper">
+          Clique em voltar para sair da atividade.
+        </div>
+        <div class="btn-row">
+          <button class="btn-solid" id="quiz-exit">Voltar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DADOS DO QUIZ -->
+  <script id="quiz-data" type="application/json">
+[
+  {
+    "prompt": "No início da HQ, por que as pessoas ficam confusas?",
+    "options": [
+      "Porque não sabem contar quantas pessoas já comeram.",
+      "Porque a comida acabou.",
+      "Porque não sabem caçar.",
+      "Porque esqueceram a fogueira acesa."
+    ],
+    "answer": 0,
+    "feedback": "Isso! Sem contar, eles não conseguem ter certeza se todos já comeram.",
+    "wrong": "Releia o primeiro quadro da HQ.",
+    "points": 10
+  },
+  {
+    "qtype": "multi",
+    "prompt": "Quais formas de contagem aparecem na HQ?",
+    "options": [
+      "Pedrinhas",
+      "Riscos na madeira",
+      "Nós em cordas",
+      "Calculadora"
+    ],
+    "answer": [0,1,2],
+    "feedback": "Muito bem! Todas essas aparecem como formas antigas de contar.",
+    "wrong": "Alguma opção não faz parte da história.",
+    "points": 20
+  },
+  {
+    "qtype": "order",
+    "prompt": "Coloque em ordem (do mais simples ao mais abstrato):",
+    "options": [
+      "Números",
+      "Pedras",
+      "Riscos",
+      "Símbolos"
+    ],
+    "answer": [1,2,3,0],
+    "feedback": "Ordem correta! 👏",
+    "wrong": "Releia os quadros 3, 4 e 5 da HQ.",
+    "points": 25
+  },
+  {
+    "prompt": "Por que os números mudam o mundo na HQ?",
+    "options": [
+      "Porque permitem medir, dividir, planejar e aprender.",
+      "Porque substituem o trabalho humano.",
+      "Porque evitam qualquer erro.",
+      "Porque existem desde sempre."
+    ],
+    "answer": 0,
+    "feedback": "Exatamente! Os números organizam a vida em sociedade.",
+    "wrong": "Pense nas ações citadas no último quadro.",
+    "points": 15
+  },
+  {
+    "prompt": "A frase “Quantos sonhos ainda vamos contar?” significa que:",
+    "options": [
+      "Os números também ajudam a planejar objetivos e o futuro.",
+      "Sonhos podem ser guardados em pedras.",
+      "Só é possível sonhar sabendo matemática.",
+      "Sonhos são iguais a números."
+    ],
+    "answer": 0,
+    "feedback": "Excelente interpretação! É uma metáfora sobre planejamento e futuro.",
+    "wrong": "A frase é simbólica. Pense além do sentido literal.",
+    "points": 20
+  }
+]
+  </script>
+
+  <script src="../../../assets/activity.js"></script>
+</body>
+</html>
