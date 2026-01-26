@@ -478,142 +478,91 @@
       refreshSelectedStyle();
     }
 
-    function renderOrder(q, opts){
-      // answer: [2,0,1,3] -> ordem correta por índices das options originais
-      var ans = isArray(q.answer) ? q.answer.slice(0) : [];
-      // valida leve: se não veio, assume ordem original
-      if (!ans.length){
-        ans = [];
-        for (var x = 0; x < opts.length; x++) ans.push(x);
-      }
+function renderOrder(q, opts){
+  var ans = Array.isArray(q.answer) ? q.answer.slice(0) : [];
+  if (!ans.length){
+    ans = [];
+    for (var t = 0; t < opts.length; t++) ans.push(t);
+  }
 
-      // Para ficar mais interessante, embaralha a apresentação (mas a resposta continua pelos índices originais).
-      var orderShown = shuffleIndices(opts.length);
+  var picked = [];
 
-      var picked = []; // sequência de índices originais escolhidos (não os embaralhados)
-      var info = createEl('div', 'helper', 'Clique nas opções na ordem correta. Depois clique em Confirmar.');
-      optionWrap.appendChild(info);
+  var info = document.createElement('div');
+  info.className = 'helper';
+  info.textContent = 'Clique nos itens na ordem correta.';
+  optionWrap.appendChild(info);
 
-      // “painel” de sequência escolhida
-      var seqBox = createEl('div', 'helper', 'Sua ordem: (vazia)');
-      seqBox.style.marginTop = '6px';
-      optionWrap.appendChild(seqBox);
+  // (opcional) linha para mostrar progresso da ordem
+  var line = document.createElement('div');
+  line.className = 'helper';
+  line.style.marginTop = '6px';
+  line.textContent = 'Sua ordem: (vazia)';
+  optionWrap.appendChild(line);
 
-      function updateSeqBox(){
-        if (!picked.length){
-          seqBox.textContent = 'Sua ordem: (vazia)';
-          return;
-        }
-        var parts = [];
-        for (var i = 0; i < picked.length; i++){
-          var idxOrig = picked[i];
-          parts.push((i + 1) + 'º ' + String(opts[idxOrig]));
-        }
-        seqBox.textContent = 'Sua ordem: ' + parts.join('  •  ');
-      }
-
-      // lista de opções clicáveis
-      var btns = [];
-
-      function refreshDisableIfPicked(){
-        // desabilita itens já escolhidos (evita repetir)
-        for (var i = 0; i < btns.length; i++){
-          var btn = btns[i];
-          var idxOrig = parseInt(btn.getAttribute('data-orig-idx'), 10);
-          var already = false;
-          for (var j = 0; j < picked.length; j++){
-            if (picked[j] === idxOrig){ already = true; break; }
-          }
-          if (already){
-            btn.setAttribute('disabled', 'disabled');
-            btn.classList.add('btn-disabled');
-            btn.style.opacity = '0.75';
-          } else {
-            btn.removeAttribute('disabled');
-            btn.classList.remove('btn-disabled');
-            btn.style.opacity = '';
-          }
-        }
-      }
-
-      for (var i = 0; i < orderShown.length; i++){
-        (function(pos){
-          var idxOrig = orderShown[pos];
-          var btn = document.createElement('button');
-          btn.className = 'option';
-          btn.textContent = String(opts[idxOrig]);
-          btn.setAttribute('data-orig-idx', String(idxOrig));
-
-          btn.addEventListener('click', function(){
-            // adiciona ao fim
-            picked.push(idxOrig);
-            updateSeqBox();
-            refreshDisableIfPicked();
-          });
-
-          btns.push(btn);
-          optionWrap.appendChild(btn);
-        })(i);
-      }
-
-      // Ações
-      var actions = createEl('div', 'btn-row', '');
-      actions.style.marginTop = '10px';
-
-      var confirmBtn = createEl('button', 'btn-solid', 'Confirmar');
-      var undoBtn = createEl('button', 'btn-ghost', 'Desfazer');
-      var resetBtn = createEl('button', 'btn-ghost', 'Limpar');
-
-      undoBtn.style.marginLeft = '8px';
-      resetBtn.style.marginLeft = '8px';
-
-      function canConfirm(){
-        // Só permite confirmar quando escolheu a mesma quantidade
-        return picked.length === ans.length;
-      }
-
-      confirmBtn.addEventListener('click', function(){
-        if (!canConfirm()){
-          showErr('Escolha ' + ans.length + ' itens (você escolheu ' + picked.length + ').');
-          return;
-        }
-        if (arraysEqual(picked, ans)){
-          showOk(q.feedback || 'Ordem correta!');
-          okAdvance();
-        } else {
-          showErr(q.wrong || 'Ordem incorreta. Tente novamente.');
-          setTimeout(function(){
-            moveWrongToEnd();
-            render();
-          }, 750);
-        }
-      });
-
-      undoBtn.addEventListener('click', function(){
-        if (!picked.length) return;
-        picked.pop();
-        updateSeqBox();
-        refreshDisableIfPicked();
-        feedback.textContent = '';
-        feedback.className = 'feedback';
-      });
-
-      resetBtn.addEventListener('click', function(){
-        picked = [];
-        updateSeqBox();
-        refreshDisableIfPicked();
-        feedback.textContent = '';
-        feedback.className = 'feedback';
-      });
-
-      actions.appendChild(confirmBtn);
-      actions.appendChild(undoBtn);
-      actions.appendChild(resetBtn);
-      optionWrap.appendChild(actions);
-
-      updateSeqBox();
-      refreshDisableIfPicked();
+  function updateLine(){
+    if (!picked.length){
+      line.textContent = 'Sua ordem: (vazia)';
+      return;
     }
+    var parts = [];
+    for (var i = 0; i < picked.length; i++){
+      parts.push((i+1) + 'º ' + opts[picked[i]]);
+    }
+    line.textContent = 'Sua ordem: ' + parts.join(' • ');
+  }
+
+  // cria botões
+  for (var optIndex = 0; optIndex < opts.length; optIndex++){
+    (function(optIndex){
+      var label = opts[optIndex];
+
+      var btn = document.createElement('button');
+      btn.className = 'option';
+      btn.textContent = label;
+
+      btn.addEventListener('click', function(){
+        // evita repetir item
+        for (var k = 0; k < picked.length; k++){
+          if (picked[k] === optIndex) return;
+        }
+
+        picked.push(optIndex);
+
+        // marca visualmente
+        btn.textContent = picked.length + 'º ' + label;
+        btn.classList.add('selected');
+        btn.disabled = true;
+
+        updateLine();
+
+        // terminou de escolher?
+        if (picked.length === ans.length){
+          var correct = true;
+          for (var j = 0; j < ans.length; j++){
+            if (picked[j] !== ans[j]) { correct = false; break; }
+          }
+
+          if (correct){
+            feedback.textContent = q.feedback || 'Ordem correta!';
+            feedback.className = 'feedback ok';
+            // AVANÇA usando o fluxo padrão do sistema
+            okAdvance();
+          } else {
+            feedback.textContent = q.wrong || 'Ordem incorreta. Tente novamente.';
+            feedback.className = 'feedback err';
+            setTimeout(function(){
+              moveWrongToEnd();
+              render();
+            }, 700);
+          }
+        }
+      });
+
+      optionWrap.appendChild(btn);
+    })(optIndex);
+  }
+}
+
 
     // binds
     if (startBtn) startBtn.addEventListener('click', start);
